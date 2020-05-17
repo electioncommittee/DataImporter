@@ -1,0 +1,26 @@
+{
+  "name": "data-importer",
+  "version": "1.0.0",
+  "description": "將中選會官網的數據資料引入資料庫。",
+  "main": "index.js",
+  "scripts": {
+    "test": "babel-node test/index.ts --extensions '.ts,.js'",
+    "start": "babel-node src/index.ts --extensions '.ts,.js'"
+  },
+  "keywords": [],
+  "author": "hyperbola",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "mariadb": "^2.3.1",
+    "node-wget-promise": "^0.1.6",
+    "typescript": "^3.9.2",
+    "xlsx": "^0.16.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.9.6",
+    "@babel/node": "^7.8.7",
+    "@babel/preset-env": "^7.9.6",
+    "@babel/preset-typescript": "^7.9.0"
+  }
+}
