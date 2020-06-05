@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "babel-node test/index.ts --extensions '.ts,.js'",
-    "start": "babel-node src/index.ts --extensions '.ts,.js'"
+    "start": "babel-node src/index.ts --extensions '.ts,.js'",
+    "start:initdb": "babel-node src/initdb.ts --extensions '.ts,.js'"
   },
   "keywords": [],
   "author": "hyperbola",
