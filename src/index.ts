@@ -5,6 +5,8 @@ import {
   importPartySerialData,
 } from "./serial";
 import importCandidateData from "./candidate";
+import importPollData from "./poll";
+import importRefData from "./referendum";
 
 async function buildTables() {
   const pool = new Pool(true);
@@ -312,8 +314,12 @@ async function run() {
     const [cityMap, distMap, villMap] = await importAreaSerialData(pool);
     const candMap = await importCandidateSerialData(pool);
     const partyMap = await importPartySerialData(pool);
-    console.log("Importing candidate data.");
-    await importCandidateData(pool, cityMap, partyMap, candMap);
+    // console.log("Importing candidate data.");
+    // await importCandidateData(pool, cityMap, partyMap, candMap);
+    // console.log("Importing poll/voter data.");
+    // await importPollData(pool, villMap);
+    console.log("Importing referendum data.");
+    await importRefData(pool, villMap);
     console.log("Completed.");
   } catch (e) {
     console.error(e);
