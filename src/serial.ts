@@ -1,7 +1,9 @@
 import Pool from "../lib/db";
 import { promises as fs } from "fs";
 
-export async function importAreaSerialData(pool: Pool, quick = false) {
+export async function importAreaSerialData(pool: Pool) {
+  console.log("Importing area serial ids.");
+
   const cityMap: { [key: string]: number } = {};
   const distMap: { [key: string]: number } = {};
   const villMap: { [key: string]: number } = {};
@@ -62,6 +64,8 @@ export async function importAreaSerialData(pool: Pool, quick = false) {
 }
 
 export async function importCandidateSerialData(pool: Pool) {
+  console.log("Importing candidate serial ids.");
+
   const candMap: { [key: string]: number } = {};
   const candTxt = await fs.readFile("res/serial/candidate", "utf8");
   const lines = candTxt.split("\n").filter((e) => e);
@@ -81,6 +85,8 @@ export async function importCandidateSerialData(pool: Pool) {
 }
 
 export async function importPartySerialData(pool: Pool) {
+  console.log("Importing party serial ids.");
+
   const partyMap: { [key: string]: number } = {};
   const candTxt = await fs.readFile("res/serial/party", "utf8");
   const lines = candTxt.split("\n").filter((e) => e);

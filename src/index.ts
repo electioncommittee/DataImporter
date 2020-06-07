@@ -10,6 +10,7 @@ import importRefData from "./referendum";
 
 async function buildTables() {
   const pool = new Pool(true);
+  console.log("Building tables.");
   await pool.query(`
     CREATE TABLE \`candidates\` (
     \`id\` smallint NOT NULL,
@@ -67,7 +68,7 @@ async function buildTables() {
     \`poll\` int NOT NULL
     );
 
-    CREATE TABLE \`legistator_voters\` (
+    CREATE TABLE \`legislator_voters\` (
     \`voter\` int NOT NULL,
     \`year\` smallint NOT NULL,
     \`vill_id\` int NOT NULL
@@ -83,7 +84,6 @@ async function buildTables() {
 
     CREATE TABLE \`local_polls\` (
     \`year\` smallint NOT NULL,
-    \`city_id\` tinyint NOT NULL,
     \`poll\` int NOT NULL,
     \`vill_id\` int NOT NULL,
     \`no\` tinyint NOT NULL
@@ -187,7 +187,7 @@ async function buildTables() {
     ADD PRIMARY KEY (\`year\`,\`vill_id\`,\`no\`),
     ADD KEY \`vill_id\` (\`vill_id\`);
 
-    ALTER TABLE \`legistator_voters\`
+    ALTER TABLE \`legislator_voters\`
     ADD PRIMARY KEY (\`year\`,\`vill_id\`),
     ADD KEY \`vill_id\` (\`vill_id\`);
 
@@ -200,7 +200,6 @@ async function buildTables() {
 
     ALTER TABLE \`local_polls\`
     ADD PRIMARY KEY (\`year\`,\`vill_id\`,\`no\`),
-    ADD KEY \`city_id\` (\`city_id\`),
     ADD KEY \`vill_id\` (\`vill_id\`);
 
     ALTER TABLE \`local_voters\`
@@ -222,7 +221,7 @@ async function buildTables() {
 
     ALTER TABLE \`president_polls\`
     ADD PRIMARY KEY (\`vill_id\`,\`year\`,\`no\`),
-    ADD UNIQUE KEY \`vill_id\` (\`vill_id\`);
+    ADD KEY \`vill_id\` (\`vill_id\`);
 
     ALTER TABLE \`president_voters\`
     ADD PRIMARY KEY (\`year\`,\`vill_id\`),
@@ -263,8 +262,8 @@ async function buildTables() {
     ALTER TABLE \`legislator_polls\`
     ADD CONSTRAINT \`legislator_polls_ibfk_1\` FOREIGN KEY (\`vill_id\`) REFERENCES \`villages\` (\`id\`);
 
-    ALTER TABLE \`legistator_voters\`
-    ADD CONSTRAINT \`legistator_voters_ibfk_1\` FOREIGN KEY (\`vill_id\`) REFERENCES \`villages\` (\`id\`);
+    ALTER TABLE \`legislator_voters\`
+    ADD CONSTRAINT \`legislator_voters_ibfk_1\` FOREIGN KEY (\`vill_id\`) REFERENCES \`villages\` (\`id\`);
 
     ALTER TABLE \`local_candidates\`
     ADD CONSTRAINT \`local_candidates_ibfk_1\` FOREIGN KEY (\`city_id\`) REFERENCES \`cities\` (\`id\`),
@@ -272,7 +271,6 @@ async function buildTables() {
     ADD CONSTRAINT \`local_candidates_ibfk_4\` FOREIGN KEY (\`party_id\`) REFERENCES \`parties\` (\`id\`);
 
     ALTER TABLE \`local_polls\`
-    ADD CONSTRAINT \`local_polls_ibfk_1\` FOREIGN KEY (\`city_id\`) REFERENCES \`cities\` (\`id\`),
     ADD CONSTRAINT \`local_polls_ibfk_2\` FOREIGN KEY (\`vill_id\`) REFERENCES \`villages\` (\`id\`);
 
     ALTER TABLE \`local_voters\`
@@ -308,17 +306,12 @@ async function buildTables() {
 async function run() {
   const pool = new Pool();
   try {
-    console.log("Building tables.");
     await buildTables();
-    console.log("Importing serial data.");
     const [cityMap, distMap, villMap] = await importAreaSerialData(pool);
     const candMap = await importCandidateSerialData(pool);
     const partyMap = await importPartySerialData(pool);
-    // console.log("Importing candidate data.");
-    // await importCandidateData(pool, cityMap, partyMap, candMap);
-    // console.log("Importing poll/voter data.");
-    // await importPollData(pool, villMap);
-    console.log("Importing referendum data.");
+    await importCandidateData(pool, cityMap, partyMap, candMap);
+    await importPollData(pool, cityMap, villMap);
     await importRefData(pool, villMap);
     console.log("Completed.");
   } catch (e) {

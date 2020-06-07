@@ -10,6 +10,7 @@ export default async function importRefData(pool: Pool, villMap: map) {
     const data = await fs.readFile(DIR + fileName, "utf8");
     const lines = data.split("\n").filter((e) => e);
     const refCase = parseInt(fileName.substr(4));
+    console.log(`Importing referendum case ${refCase}.`);
     for (const line of lines) {
       const tokens = line.split(",");
       const villId = villMap[tokens[0] + tokens[1] + tokens[2]];
