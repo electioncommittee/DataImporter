@@ -1,5 +1,5 @@
 import Pool from "../lib/db";
-import importSerial from "./serial";
+import { importAreaData, importCandidateData, importPartyData } from "./serial";
 
 async function buildTables() {
   const pool = new Pool(true);
@@ -299,12 +299,21 @@ async function buildTables() {
 }
 
 async function run() {
+  const pool = new Pool();
   try {
-    // await buildTables();
-    await importSerial();
+    console.log("Building tables.");
+    await buildTables();
+    console.log("Building area serial data.");
+    const villMap = await importAreaData(pool);
+    console.log("Building candidate serial data.");
+    const candMap = await importCandidateData(pool);
+    console.log("Building party serial data.");
+    const partyMap = await importPartyData(pool);
+    console.log("Completed.");
   } catch (e) {
     console.error(e);
   }
+  pool.close();
 }
 
 run();

@@ -16,6 +16,6 @@ export default class Pool {
     return await this.pool.query(sql, param);
   }
   async close() {
-    return await this.pool.end();
+    await this.pool.end();
   }
 }
