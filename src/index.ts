@@ -1,5 +1,10 @@
 import Pool from "../lib/db";
-import { importAreaData, importCandidateData, importPartyData } from "./serial";
+import {
+  importAreaSerialData,
+  importCandidateSerialData,
+  importPartySerialData,
+} from "./serial";
+import importCandidateData from "./candidate";
 
 async function buildTables() {
   const pool = new Pool(true);
@@ -169,7 +174,7 @@ async function buildTables() {
     ALTER TABLE \`legislator_candidates\`
     ADD PRIMARY KEY (\`year\`,\`cst\`,\`no\`),
     ADD UNIQUE KEY \`year_cand\` (\`cand_id\`,\`year\`),
-    ADD UNIQUE KEY \`cand_id\` (\`cand_id\`),
+    ADD KEY \`cand_id\` (\`cand_id\`),
     ADD KEY \`party_id\` (\`party_id\`);
 
     ALTER TABLE \`legislator_constituencies\`
@@ -262,7 +267,7 @@ async function buildTables() {
     ALTER TABLE \`local_candidates\`
     ADD CONSTRAINT \`local_candidates_ibfk_1\` FOREIGN KEY (\`city_id\`) REFERENCES \`cities\` (\`id\`),
     ADD CONSTRAINT \`local_candidates_ibfk_3\` FOREIGN KEY (\`cand_id\`) REFERENCES \`candidates\` (\`id\`),
-    ADD CONSTRAINT \`local_candidates_ibfk_4\` FOREIGN KEY (\`year\`) REFERENCES \`parties\` (\`id\`);
+    ADD CONSTRAINT \`local_candidates_ibfk_4\` FOREIGN KEY (\`party_id\`) REFERENCES \`parties\` (\`id\`);
 
     ALTER TABLE \`local_polls\`
     ADD CONSTRAINT \`local_polls_ibfk_1\` FOREIGN KEY (\`city_id\`) REFERENCES \`cities\` (\`id\`),
@@ -303,12 +308,12 @@ async function run() {
   try {
     console.log("Building tables.");
     await buildTables();
-    console.log("Building area serial data.");
-    const villMap = await importAreaData(pool);
-    console.log("Building candidate serial data.");
-    const candMap = await importCandidateData(pool);
-    console.log("Building party serial data.");
-    const partyMap = await importPartyData(pool);
+    console.log("Importing serial data.");
+    const [cityMap, distMap, villMap] = await importAreaSerialData(pool);
+    const candMap = await importCandidateSerialData(pool);
+    const partyMap = await importPartySerialData(pool);
+    console.log("Importing candidate data.");
+    await importCandidateData(pool, cityMap, partyMap, candMap);
     console.log("Completed.");
   } catch (e) {
     console.error(e);

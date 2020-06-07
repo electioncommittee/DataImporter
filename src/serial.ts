@@ -1,7 +1,7 @@
 import Pool from "../lib/db";
 import { promises as fs } from "fs";
 
-export async function importAreaData(pool: Pool) {
+export async function importAreaSerialData(pool: Pool, quick = false) {
   const cityMap: { [key: string]: number } = {};
   const distMap: { [key: string]: number } = {};
   const villMap: { [key: string]: number } = {};
@@ -58,10 +58,10 @@ export async function importAreaData(pool: Pool) {
   await importDistData();
   await importVillData();
 
-  return villMap;
+  return [cityMap, distMap, villMap];
 }
 
-export async function importCandidateData(pool: Pool) {
+export async function importCandidateSerialData(pool: Pool) {
   const candMap: { [key: string]: number } = {};
   const candTxt = await fs.readFile("res/serial/candidate", "utf8");
   const lines = candTxt.split("\n").filter((e) => e);
@@ -80,7 +80,7 @@ export async function importCandidateData(pool: Pool) {
   return candMap;
 }
 
-export async function importPartyData(pool: Pool) {
+export async function importPartySerialData(pool: Pool) {
   const partyMap: { [key: string]: number } = {};
   const candTxt = await fs.readFile("res/serial/party", "utf8");
   const lines = candTxt.split("\n").filter((e) => e);
@@ -96,5 +96,6 @@ export async function importPartyData(pool: Pool) {
     ]);
   }
 
+  await pool.query("INSERT INTO parties (name, id) VALUES (NULL, -1)");
   return partyMap;
 }
