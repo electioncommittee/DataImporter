@@ -1,9 +1,8 @@
 import Pool from "../lib/db";
 import { promises as fs } from "fs";
+import ProgressBar from "progress";
 
 export async function importAreaSerialData(pool: Pool) {
-  console.log("Importing area serial ids.");
-
   const cityMap: { [key: string]: number } = {};
   const distMap: { [key: string]: number } = {};
   const villMap: { [key: string]: number } = {};
@@ -11,6 +10,15 @@ export async function importAreaSerialData(pool: Pool) {
   async function importCityData() {
     const cityTxt = await fs.readFile("res/serial/city", "utf8");
     const lines = cityTxt.split("\n").filter((e) => e);
+    const pgBar = new ProgressBar(
+      "[:current/:total] Importing city serial data [:bar] :rate/rps :eta",
+      {
+        total: lines.length,
+        complete: "+",
+        incomplete: ".",
+      }
+    );
+
     for (const line of lines) {
       const tokens = line.split(",");
       const cityName = tokens[0];
@@ -20,12 +28,22 @@ export async function importAreaSerialData(pool: Pool) {
         id,
         cityName,
       ]);
+      pgBar.tick();
     }
   }
 
   async function importDistData() {
     const distTxt = await fs.readFile("res/serial/district", "utf8");
     const lines = distTxt.split("\n").filter((e) => e);
+    const pgBar = new ProgressBar(
+      "[:current/:total] Importing district serial data [:bar] :rate/rps :eta",
+      {
+        total: lines.length,
+        complete: "+",
+        incomplete: ".",
+      }
+    );
+
     for (const line of lines) {
       const tokens = line.split(",");
       const cityName = tokens[0];
@@ -36,12 +54,22 @@ export async function importAreaSerialData(pool: Pool) {
         "INSERT INTO districts (id, name, city) VALUES (?, ?, ?)",
         [id, distName, cityMap[cityName]]
       );
+      pgBar.tick();
     }
   }
 
   async function importVillData() {
     const distTxt = await fs.readFile("res/serial/village", "utf8");
     const lines = distTxt.split("\n").filter((e) => e);
+    const pgBar = new ProgressBar(
+      "[:current/:total] Importing village serial data [:bar] :rate/rps :eta",
+      {
+        total: lines.length,
+        complete: "+",
+        incomplete: ".",
+      }
+    );
+
     for (const line of lines) {
       const tokens = line.split(",");
       const cityName = tokens[0];
@@ -53,6 +81,7 @@ export async function importAreaSerialData(pool: Pool) {
         "INSERT INTO villages (id, name, dist) VALUES (?, ?, ?)",
         [id, villName, distMap[cityName + distName]]
       );
+      pgBar.tick();
     }
   }
 
@@ -64,11 +93,17 @@ export async function importAreaSerialData(pool: Pool) {
 }
 
 export async function importCandidateSerialData(pool: Pool) {
-  console.log("Importing candidate serial ids.");
-
   const candMap: { [key: string]: number } = {};
   const candTxt = await fs.readFile("res/serial/candidate", "utf8");
   const lines = candTxt.split("\n").filter((e) => e);
+  const pgBar = new ProgressBar(
+    "[:current/:total] Importing candidate serial data [:bar] :rate/rps :eta",
+    {
+      total: lines.length,
+      complete: "+",
+      incomplete: ".",
+    }
+  );
 
   for (const line of lines) {
     const tokens = line.split(",");
@@ -79,17 +114,24 @@ export async function importCandidateSerialData(pool: Pool) {
       name,
       id,
     ]);
+    pgBar.tick();
   }
 
   return candMap;
 }
 
 export async function importPartySerialData(pool: Pool) {
-  console.log("Importing party serial ids.");
-
   const partyMap: { [key: string]: number } = {};
   const candTxt = await fs.readFile("res/serial/party", "utf8");
   const lines = candTxt.split("\n").filter((e) => e);
+  const pgBar = new ProgressBar(
+    "[:current/:total] Importing party serial data [:bar] :rate/rps :eta",
+    {
+      total: lines.length,
+      complete: "+",
+      incomplete: ".",
+    }
+  );
 
   for (const line of lines) {
     const tokens = line.split(",");
@@ -100,8 +142,9 @@ export async function importPartySerialData(pool: Pool) {
       name,
       id,
     ]);
+    pgBar.tick();
   }
 
-  await pool.query("INSERT INTO parties (name, id) VALUES (NULL, -1)");
+  await pool.query("INSERT INTO parties (name, id) VALUES ('', -1)");
   return partyMap;
 }

@@ -1,5 +1,6 @@
 import Pool from "../lib/db";
 import { promises as fs } from "fs";
+import ProgressBar from "progress";
 
 type map = { [key: string]: number };
 
@@ -68,14 +69,35 @@ export default async function importCandidateData(
   const files = await fs.readdir(DIR);
   for (const fileName of files) {
     let func: (year: number, tokens: string[]) => Promise<void>;
-    if (fileName.startsWith("lal")) func = importLegAtLarData;
-    else if (fileName.startsWith("lcl")) func = importLocalData;
-    else if (fileName.startsWith("psd")) func = importPsdData;
-    else if (fileName.startsWith("leg")) func = importLegData;
+    let title: string;
+    if (fileName.startsWith("lal")) {
+      func = importLegAtLarData;
+      title = "legislator at large";
+    } else if (fileName.startsWith("lcl")) {
+      func = importLocalData;
+      title = "local";
+    } else if (fileName.startsWith("psd")) {
+      func = importPsdData;
+      title = "president";
+    } else if (fileName.startsWith("leg")) {
+      func = importLegData;
+      title = "legislator";
+    }
 
     const data = await fs.readFile(DIR + fileName, "utf8");
     const lines = data.split("\n").filter((e) => e);
     const year = parseInt(fileName.substr(fileName.length - 4));
-    for (const line of lines) await func(year, line.split(","));
+    const pgBar = new ProgressBar(
+      `[:current/:total] Importing ${title} candidate data (${year}) [:bar] :rate/rps :eta`,
+      {
+        total: lines.length,
+        complete: "+",
+        incomplete: ".",
+      }
+    );
+    for (const line of lines) {
+      await func(year, line.split(","));
+      pgBar.tick();
+    }
   }
 }

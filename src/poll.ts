@@ -1,5 +1,6 @@
 import Pool from "../lib/db";
 import { promises as fs } from "fs";
+import ProgressBar from "progress";
 
 type map = { [key: string]: number };
 
@@ -10,7 +11,14 @@ export async function importLegCstData(pool: Pool, cityMap: map, villMap: map) {
     const data = await fs.readFile(DIR + fileName, "utf8");
     const lines = data.split("\n").filter((e) => e);
     const year = parseInt(fileName.substr(fileName.length - 4));
-    console.log(`Importing legislator constituency data (${year}).`);
+    const pgBar = new ProgressBar(
+      `[:current/:total] Importing legislator constituency data (${year}) [:bar] :rate/rps :eta`,
+      {
+        total: lines.length,
+        complete: "+",
+        incomplete: ".",
+      }
+    );
     for (const line of lines) {
       const tokens = line.split(",");
       const villId = villMap[tokens[0] + tokens[1] + tokens[2]];
@@ -22,6 +30,7 @@ export async function importLegCstData(pool: Pool, cityMap: map, villMap: map) {
       `,
         [villId, year, cstId]
       );
+      pgBar.tick();
     }
   }
 }
@@ -67,14 +76,19 @@ async function importPollData(pool: Pool, villMap: map) {
     const data = await fs.readFile(DIR + fileName, "utf8");
     const lines = data.split("\n").filter((e) => e);
     const year = parseInt(fileName.substr(fileName.length - 4));
-    if (fileName.startsWith("lal"))
-      console.log(`Importing legislator at large data (${year}).`);
-    else if (fileName.startsWith("lcl"))
-      console.log(`Importing local data (${year}).`);
-    else if (fileName.startsWith("leg"))
-      console.log(`Importing legislator data (${year}).`);
-    else if (fileName.startsWith("psd"))
-      console.log(`Importing president data (${year}).`);
+    let title: string;
+    if (fileName.startsWith("lal")) title = "legislator at large";
+    else if (fileName.startsWith("lcl")) title = "local";
+    else if (fileName.startsWith("leg")) title = "legislator";
+    else if (fileName.startsWith("psd")) title = "president";
+    const pgBar = new ProgressBar(
+      `[:current/:total] Importing ${title} poll data (${year}) [:bar] :rate/rps :eta`,
+      {
+        total: lines.length,
+        complete: "+",
+        incomplete: ".",
+      }
+    );
     for (const line of lines) {
       const tokens = line.split(",");
       const villId = villMap[tokens[0] + tokens[1] + tokens[2]];
@@ -87,6 +101,7 @@ async function importPollData(pool: Pool, villMap: map) {
       else if (fileName.startsWith("psd")) tableName = "president";
       else if (fileName.startsWith("lcl")) tableName = "local";
       await importData(year, tableName, villId, polls, voidPoll, voters);
+      pgBar.tick();
     }
   }
 }
