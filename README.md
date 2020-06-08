@@ -65,7 +65,7 @@ npm start
 
 | column | type     | instuction |
 | ---    | ---      | ---        |
-| id     | tinyint      | 政黨編號        |
+| id     | smallint     | 政黨編號        |
 | name   | varchar  | 政黨名稱    |
 
 - 🔑 `id`
@@ -132,7 +132,7 @@ npm start
 | ---      | ---      | ---        |
 | year     | smallint | 選舉年份    |
 | no       | tinyint  | 號次    |
-| party_id | tinyint  | 參選政黨    |
+| party_id | smallint  | 參選政黨    |
 
 - 🔑 `year` `no`
 - 🗝️ `year` `party_id`
@@ -146,7 +146,7 @@ npm start
 | cst      | smallint | 選區    |
 | no       | tinyint  | 號次   |
 | cand_id  | smallint | 候選人     |
-| party_id | tinyint  | 推薦政黨    |
+| party_id | smallint  | 推薦政黨    |
 
 - 🔑 `year` `cst` `no`
 - 🗝️ `year` `cand_id`
@@ -160,7 +160,7 @@ npm start
 | city     | tinyint  | 縣市    |
 | no       | tinyint  | 號次   |
 | cand_id  | smallint | 候選人     |
-| party_id | tinyint  | 推薦政黨    |
+| party_id | smallint  | 推薦政黨    |
 
 - 🔑 `year` `city` `no`
 - 🗝️ `year` `cand_id`
@@ -174,7 +174,7 @@ npm start
 | no       | tinyint  | 號次       |
 | cand_id  | smallint | 總統候選人     |
 | vice_cand_id  | smallint | 副總統候選人     |
-| party_id | tinyint  | 推薦政黨    |
+| party_id | smallint  | 推薦政黨    |
 
 - 🔑 `year` `no`
 - 🗝️ `year` `cand_id`
