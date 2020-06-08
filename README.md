@@ -53,7 +53,7 @@ npm start
 
 | column | type     | instuction |
 | ---    | ---      | ---        |
-| id     | int      | 村里    |
+| id     | int      | 村里編號    |
 | name   | varchar  | 村里名稱    |
 | dist   | smallint | 所屬鄉/鎮/市/區編號 |
 
