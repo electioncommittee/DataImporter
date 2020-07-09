@@ -2,10 +2,15 @@ import Pool from "../lib/db";
 import { promises as fs } from "fs";
 import ProgressBar from "progress";
 
-export async function importAreaSerialData(pool: Pool) {
+export async function importAreaSerialData(pool: Pool, mapOnly = false) {
   const cityMap: { [key: string]: number } = {};
   const distMap: { [key: string]: number } = {};
   const villMap: { [key: string]: number } = {};
+
+  async function query(sql: string, values: any[] = []) {
+    if (mapOnly) return;
+    await pool.query(sql, values || []);
+  }
 
   async function importCityData() {
     const cityTxt = await fs.readFile("res/serial/city", "utf8");
@@ -24,7 +29,7 @@ export async function importAreaSerialData(pool: Pool) {
       const cityName = tokens[0];
       const id = parseInt(tokens[1]);
       cityMap[cityName] = id;
-      await pool.query("INSERT INTO cities (id, name) VALUES (?, ?)", [
+      await query("INSERT INTO cities (id, name) VALUES (?, ?)", [
         id,
         cityName,
       ]);
@@ -50,10 +55,11 @@ export async function importAreaSerialData(pool: Pool) {
       const distName = tokens[1];
       const id = parseInt(tokens[2]);
       distMap[cityName + distName] = id;
-      await pool.query(
-        "INSERT INTO districts (id, name, city) VALUES (?, ?, ?)",
-        [id, distName, cityMap[cityName]]
-      );
+      await query("INSERT INTO districts (id, name, city) VALUES (?, ?, ?)", [
+        id,
+        distName,
+        cityMap[cityName],
+      ]);
       pgBar.tick();
     }
   }
@@ -77,10 +83,11 @@ export async function importAreaSerialData(pool: Pool) {
       const villName = tokens[2];
       const id = parseInt(tokens[3]);
       villMap[cityName + distName + villName] = id;
-      await pool.query(
-        "INSERT INTO villages (id, name, dist) VALUES (?, ?, ?)",
-        [id, villName, distMap[cityName + distName]]
-      );
+      await query("INSERT INTO villages (id, name, dist) VALUES (?, ?, ?)", [
+        id,
+        villName,
+        distMap[cityName + distName],
+      ]);
       pgBar.tick();
     }
   }
@@ -92,7 +99,12 @@ export async function importAreaSerialData(pool: Pool) {
   return [cityMap, distMap, villMap];
 }
 
-export async function importCandidateSerialData(pool: Pool) {
+export async function importCandidateSerialData(pool: Pool, mapOnly = false) {
+  async function query(sql: string, values: any[] = []) {
+    if (mapOnly) return;
+    await pool.query(sql, values || []);
+  }
+
   const candMap: { [key: string]: number } = {};
   const candTxt = await fs.readFile("res/serial/candidate", "utf8");
   const lines = candTxt.split("\n").filter((e) => e);
@@ -110,17 +122,19 @@ export async function importCandidateSerialData(pool: Pool) {
     const name = tokens[0];
     const id = parseInt(tokens[1]);
     candMap[name] = id;
-    await pool.query("INSERT INTO candidates (name, id) VALUES (?, ?)", [
-      name,
-      id,
-    ]);
+    await query("INSERT INTO candidates (name, id) VALUES (?, ?)", [name, id]);
     pgBar.tick();
   }
 
   return candMap;
 }
 
-export async function importPartySerialData(pool: Pool) {
+export async function importPartySerialData(pool: Pool, mapOnly = false) {
+  async function query(sql: string, values: any[] = []) {
+    if (mapOnly) return;
+    await pool.query(sql, values || []);
+  }
+
   const partyMap: { [key: string]: number } = {};
   const candTxt = await fs.readFile("res/serial/party", "utf8");
   const lines = candTxt.split("\n").filter((e) => e);
@@ -138,13 +152,10 @@ export async function importPartySerialData(pool: Pool) {
     const name = tokens[0];
     const id = parseInt(tokens[1]);
     partyMap[name] = id;
-    await pool.query("INSERT INTO parties (name, id) VALUES (?, ?)", [
-      name,
-      id,
-    ]);
+    await query("INSERT INTO parties (name, id) VALUES (?, ?)", [name, id]);
     pgBar.tick();
   }
 
-  await pool.query("INSERT INTO parties (name, id) VALUES ('', -1)");
+  await query("INSERT INTO parties (name, id) VALUES ('', -1)");
   return partyMap;
 }
